@@ -34,6 +34,7 @@ module.exports = function(RED) {
         this.server = (typeof n.server == 'boolean')?n.server:(n.server == "server");
         this.closing = false;
         this.connected = false;
+        this.srvSendEnd = n.srvSendEnd;
         var node = this;
         var count = 0;
 
@@ -158,14 +159,20 @@ module.exports = function(RED) {
                     }
                 });
                 socket.on('end', function() {
-                    if (!node.stream || (node.datatype === "utf8" && node.newline !== "")) {
-                        if (buffer.length > 0) {
-                            var msg = {topic:node.topic,payload:buffer};
-                            msg._session = {type:"tcp",id:id};
-                            node.send(msg);
-                        }
+                    //Create a message that could be sent in case we have to send an end
+                    var msg = {topic:node.topic, _session:{type:"tcp",id:id, end:true}};
+                    msg.payload = (node.datatype == 'buffer')? null:"";
+                    //Add the current buffer if we are set to only send delimited strings
+                    if (!node.stream || (node.datatype === "utf8" && node.newline !== "" && buffer.length > 0)) {
+                        msg.payload = buffer;
+                        node.send(msg);
                         buffer = null;
                     }
+                    //If the end notification is turned on, ensure the blank message is sent
+                    else if (node.srvSendEnd) {
+                        node.send(msg);
+                    };
+                    msg = null;
                 });
                 socket.on('timeout', function() {
                     node.log('timeout closed socket port '+node.port);
