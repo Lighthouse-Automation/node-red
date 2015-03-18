@@ -26,6 +26,10 @@
     <div class="form-row hidden" id="node-input-host-row" style="padding-left: 110px;">
         at host <input type="text" id="node-input-host" placeholder="localhost" style="width: 60%;">
     </div>
+    <div class="form-row hidden" id="node-input-srvSendEnd-row" style="padding-left: 110px;">
+        <input type="checkbox" id="node-input-srvSendEnd" style="width: auto; vertical-align: top;">
+        <label for="node-input-srvSendEnd" style="width: auto">Notify when client ends?</label>
+    </div>
 
     <div class="form-row">
         <label><i class="fa fa-sign-out"></i> Output</label>
@@ -74,6 +78,7 @@
             newline:{value:""},
             topic: {value:""},
             name: {value:""},
+            srvSendEnd: {value:false},
             base64: {/*deprecated*/ value:false,required:true}
         },
         inputs:0,
@@ -90,8 +95,11 @@
                 var sockettype = $("#node-input-server option:selected").val();
                 if (sockettype == "client") {
                     $("#node-input-host-row").show();
+                    $("#node-input-srvSendEnd-row").hide();
+                    $('#node-input-srvSendEnd').prop('checked', false);
                 } else {
                     $("#node-input-host-row").hide();
+                    $("#node-input-srvSendEnd-row").show();
                 }
                 var datamode = $("#node-input-datamode option:selected").val();
                 var datatype = $("#node-input-datatype option:selected").val();
