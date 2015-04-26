@@ -16,13 +16,14 @@
 
 module.exports = function(RED) {
     "use strict";
-    var mustache = require("mustache");
+    var mustache = require("mustache"), jade = require("jade");
 
     function TemplateNode(n) {
         RED.nodes.createNode(this,n);
         this.name = n.name;
         this.field = n.field || "payload";
         this.template = n.template;
+        this.format = n.format;
         var node = this;
 
         var b = node.field.split(".");
@@ -35,8 +36,17 @@ module.exports = function(RED) {
             }
             else {
                  if (i === b.length) { // we've finished so assign the value
-                     obj[b[i-1]] = mustache.render(node.template,m);
-                     node.send(m);
+                    switch (node.format) {
+                        case 'handlebars':
+                            obj[b[i-1]] = mustache.render(node.template,m);
+                            break;
+                        case 'jade':
+                            obj[b[i-1]] = jade.render(node.template,m);
+                            break;
+                        default:
+                            obj[b[i-1]] = node.template;
+                    };
+                    node.send(m);
                  }
                  else {
                      obj[b[i-1]] = {}; // needs to be a new object so create it
